@@ -1,0 +1,55 @@
+#!/usr/bin/python
+"""Python main file."""
+# -*- coding: utf-8 -*-
+
+import recognizer.utils.color_correlation as color_correlation
+import cv2
+import recognizer.utils.dewapper as dewapper
+from recognizer.utils.signature_extractor import extract_signature
+import recognizer.utils.unsharpen as unsharpen
+
+
+source_image = cv2.imread("input/w1.jpg")
+img = 0
+try:
+    # read the source input image and call the dewarp_book function
+    # to perform cropping with the margin and book dewarping
+    img = dewapper.dewarp_book(source_image)
+    cv2.imwrite("/outputs/step 1 - page_dewarped.jpg", img)
+    print("- step1 (cropping with the argins + book dewarpping): OK")
+except Exception as e:
+    print("type error: " + str(e))
+    print("ERROR IN CROPPING & BOOK DEWARPING! PLEASE CHECK LIGTHNING,"
+          " SHADOW, ZOOM LEVEL AND ETC. OF YOUR INPUT BOOK IMAGE!")
+try:
+    # call the unsharpen_mask method to perform signature extraction
+    img = extract_signature(cv2.cvtColor(img,
+                                                cv2.COLOR_BGR2GRAY))
+    cv2.imwrite("/outputs/step 2 - signature_extracted.jpg", img)
+    print("- step2 (signature extractor): OK")
+except Exception as e:
+    print("type error: " + str(e))
+    print("ERROR IN SIGNATURE EXTRACTION! PLEASE CHECK LIGTHNING, SHADOW,"
+          " ZOOM LEVEL AND ETC. OF YOUR INPUT BOOK IMAGE!")
+try:
+    # call the unsharpen_mask method to perform unsharpening mask
+    unsharpen.unsharpen_mask(img)
+    cv2.imwrite("/outputs/step 3 - unsharpen_mask.jpg", img)
+    print("- step3 (unsharpening mask): OK")
+except Exception as e:
+    print("type error: " + str(e))
+    print("ERROR IN BOOK UNSHARPING MASK! PLEASE CHECK LIGTHNING, SHADOW,"
+          " ZOOM LEVEL AND ETC. OF YOUR INPUT BOOK IMAGE!")
+try:
+    # call the funcBrightContrast method to perform color correction
+    img = color_correlation.funcBrightContrast(img)
+    cv2.imwrite("/outputs/step 4 - color_correlated.jpg", img)
+    print("- step4 (color correlation): OK")
+except Exception as e:
+    print("type error: " + str(e))
+    print("ERROR IN BOOK COLOR CORRELATION! PLEASE CHECK LIGTHNING, SHADOW,"
+          " ZOOM LEVEL AND ETC. OF YOUR INPUT BOOK IMAGE!")
+
+
+
+cv2.imwrite("/outputs/outputs.jpg", img)
